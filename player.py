@@ -1,9 +1,7 @@
 import pygame
 from settings import *
 from tilelib import load_image
-
-
-PLAYER_FILE = "wizard.png"
+from resources import PLAYER_FILE
 
 
 class Player:

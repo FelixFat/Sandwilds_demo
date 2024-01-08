@@ -1,10 +1,11 @@
 from tilelib import *
+from resources import TILE_FILE
 
 
 class Map:
 
     def __init__(self) -> None:
-        self._tileset = Tileset(TILEFILE, TILESHAPE)
+        self._tileset = Tileset(TILE_FILE, TILESHAPE)
         self._tilemap = Tilemap(self._tileset, WINSHAPE)
         self.set_empty()
 

@@ -3,9 +3,6 @@ import numpy as np
 from settings import *
 
 
-TILEFILE = 'tmw_desert_spacing.png'
-
-
 class Tileset:
 
     def __init__(self, file, size, margin=1, spacing=1):
