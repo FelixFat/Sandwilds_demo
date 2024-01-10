@@ -1,7 +1,7 @@
 import pygame
-from settings import *
-from player import Player
-from map import *
+from code.settings import *
+from code.player import Player
+from code.map import *
 
 
 class Game:
@@ -46,6 +46,7 @@ class Game:
     def _action(self):
         if self._player is not None:
             self._player.move(self._keys, self._mods)
+            self.map.collision(self._player.rect)
     
     def _render(self):
         self.map.draw(self.scene)

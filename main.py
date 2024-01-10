@@ -1,6 +1,6 @@
 import sys
 
-from game import Game
+from code.game import Game
 
 
 def main():

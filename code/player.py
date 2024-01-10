@@ -1,7 +1,10 @@
+import math
 import pygame
-from settings import *
-from tilelib import load_image
-from resources import PLAYER_FILE
+
+from code.settings import *
+from code.map import check_pos
+from code.tiles import load_image
+from code.resources import PLAYER_FILE
 
 
 class Player:
@@ -9,39 +12,43 @@ class Player:
     def __init__(self, coords) -> None:
         self._direct = 'left'
         self._direct_prev = self._direct
-        self._x, self._y = check_tile_pos(coords, TILESHAPE)
+
+        self._r = TILESIZE // 2
+        
         self.image = load_image(PLAYER_FILE, TILESHAPE)
+        self.rect = self.image.get_rect()
+        self.rect.center = coords
 
     def move(self, keys, mods):
-        x, y = self._x, self._y
-        speed = 5 if mods & pygame.KMOD_SHIFT else 3
-        #speed = TILESIZE
-
+        x, y = 0, 0
+        speed = 7 if mods & pygame.KMOD_SHIFT else 5
+        
         if keys[pygame.K_UP]:
             y -= speed
         if keys[pygame.K_DOWN]:
             y += speed
         if keys[pygame.K_LEFT]:
             x -= speed
+            self._direct = 'left'
         if keys[pygame.K_RIGHT]:
             x += speed
-
-        if x > self._x:
             self._direct = 'right'
-        if x < self._x:
-            self._direct = 'left'
 
-        self._x, self._y = check_tile_pos((x, y), TILESHAPE)
+        if x and y:
+            x *= (math.sqrt(2) / 2)
+            y *= (math.sqrt(2) / 2)
+
+        self.rect.move_ip(x, y)
+        check_pos(self.rect)
 
     def get_pos(self):
-        return self._x, self._y
+        return self.rect.center
 
     def draw(self, scene):
         if self._direct != self._direct_prev:
             self.image = pygame.transform.flip(self.image, True, False)
-
-        scene.blit(self.image, self.get_pos())
-        #pygame.draw.circle(scene, BLUE, (self._x, self._y), self._r, 1)
+        
+        scene.blit(self.image, self.rect)
 
         self._direct_prev = self._direct
     

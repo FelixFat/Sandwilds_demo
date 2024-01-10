@@ -1,6 +1,6 @@
 import pygame
 import numpy as np
-from settings import *
+from code.settings import *
 
 
 class Tileset:
@@ -23,8 +23,8 @@ class Tileset:
         dx = self.size[0] + self.spacing
         dy = self.size[1] + self.spacing
         
-        for x in range(x0, w, dx):
-            for y in range(y0, h, dy):
+        for y in range(y0, h, dy):
+            for x in range(x0, w, dx):
                 tile = pygame.Surface(self.size)
                 tile.blit(self.image, (0, 0), (x, y, *self.size))
                 self.tiles.append(tile)
