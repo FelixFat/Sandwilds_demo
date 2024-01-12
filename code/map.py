@@ -2,20 +2,6 @@ from code.tiles import *
 from code.resources import TILE_FILE
 
 
-SAND_TILE = 29
-
-FWALL_TILE = 9
-DWALL_TILE = 1
-RWALL_TILE = 8
-LWALL_TILE = 10
-UWALL_TILE = 17
-
-ULWALL_TILE = 19
-URWALL_TILE = 20
-DLWALL_TILE = 27
-DRWALL_TILE = 28
-
-
 class Map:
 
     def __init__(self) -> None:
@@ -24,35 +10,20 @@ class Map:
 
         self._obstacles = []
 
-        self.set_box()
+        self.set_level(-1)
 
     def draw(self, scene):
         scene.blit(self._tilemap.image, self._tilemap.rect)
 
-    def set_box(self):
-        w, h = self._tilemap.size
-
-        self._tilemap.map = np.array([[SAND_TILE for _ in range(h)] for _ in range(w)])
-
-        self._tilemap.map[0] = [UWALL_TILE for _ in range(w)]
-        self._tilemap.map[-1] = [DWALL_TILE for _ in range(w)]
-        self._tilemap.map[:, 0] = [LWALL_TILE for _ in range(h)]
-        self._tilemap.map[:, -1] = [RWALL_TILE for _ in range(h)]
-        
-        self._tilemap.map[0, 0] = ULWALL_TILE
-        self._tilemap.map[0, -1] = URWALL_TILE
-        self._tilemap.map[-1, 0] = DLWALL_TILE
-        self._tilemap.map[-1, -1] = DRWALL_TILE
-
-        self._tilemap.map[10, 10] = FWALL_TILE
-        
+    def set_level(self, lvl_num):
+        self._tilemap.map = load_level(lvl_num, self._tilemap.size)
         self._set_objects()
         self._tilemap.render()
 
     def _set_objects(self):
         self._obstacles.clear()
         self._obstacles = [
-            pygame.Rect((w * TILESIZE, h * TILESIZE), (TILESIZE, TILESIZE))
+            Block('wall', self._tilemap.map[w, h], (w, h), TILESIZE)
             for h in range(self._tilemap.map.shape[1])
             for w in range(self._tilemap.map.shape[0])
             if self._tilemap.map[w, h] != SAND_TILE
@@ -60,20 +31,47 @@ class Map:
 
     def collision(self, rect: pygame.Rect):
         for obstacle in self._obstacles:
-            if rect.colliderect(obstacle):
-                dx = rect.centerx - obstacle.centerx
-                dy = rect.centery - obstacle.centery
+            if rect.colliderect(obstacle.rect):
+                dx = rect.centerx - obstacle.rect.centerx
+                dy = rect.centery - obstacle.rect.centery
 
                 if abs(dx) > abs(dy):
                     if dx > 0:
-                        rect.left = obstacle.right
+                        rect.left = obstacle.rect.right
                     else:
-                        rect.right = obstacle.left
+                        rect.right = obstacle.rect.left
                 else:
                     if dy > 0:
-                        rect.top = obstacle.bottom
+                        rect.top = obstacle.rect.bottom
                     else:
-                        rect.bottom = obstacle.top
+                        rect.bottom = obstacle.rect.top
+
+class Block:
+    def __init__(self, in_type, tile, map_pos, size) -> None:
+        self.type = in_type
+        self.tile = tile
+        self.rect = self._set_rect(tile, map_pos, size)
+
+    def _set_rect(self, tile, map_pos, size):
+        rect_pos = [map_pos[0] * size, map_pos[1] * size]
+        rect_size = [size, size]
+
+        if tile == DWALL_TILE:
+            rect_pos[1] = rect_pos[1] + size // 2
+            rect_size[1] = rect_size[1] // 2
+        elif tile == RWALL_TILE:
+            rect_pos[0] = rect_pos[0] + size // 2
+            rect_size[0] = rect_size[0] // 2
+        elif tile == LWALL_TILE:
+            rect_size[0] = rect_size[0] // 2
+        elif tile == UWALL_TILE:
+            rect_size[1] = rect_size[1] // 2
+
+        return pygame.Rect(rect_pos, rect_size)
+    
+    def get_info(self):
+        return {'type': self.type, 'pos': (self.rect.x, self.rect.y), 'size': self.rect.size }
+
 
 def check_pos(rect: pygame.Rect):
     if rect.left < 0:
