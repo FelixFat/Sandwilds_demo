@@ -10,6 +10,7 @@ class Game:
         self._running = True
         self._player = None
         self._keys = []
+        self.mouse_pos = (0, 0)
         
     def start(self):
         pygame.init()
@@ -33,15 +34,17 @@ class Game:
         self._mods = pygame.key.get_mods()
 
         for event in pygame.event.get():
+            self.mouse_pos = pygame.mouse.get_pos()
+
             if event.type == pygame.QUIT:
                 self._running = False
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self._player is None:
-                    self._player = Player(pygame.mouse.get_pos())
+                    self._player = Player(self.mouse_pos)
                     print(f"Player is created at: {self._player.get_pos()}")
                 else:
-                    print(f"Click! {pygame.mouse.get_pos()}")
+                    print(f"Click! {self.mouse_pos}")
     
     def _action(self):
         if self._player is not None:
@@ -50,6 +53,7 @@ class Game:
     
     def _render(self):
         self.map.draw(self.scene)
+        self.map.map_highlight(self.scene, self.mouse_pos)
         
         if self._player is not None:
             self._player.draw(self.scene)

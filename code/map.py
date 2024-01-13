@@ -2,7 +2,6 @@ import numpy as np
 
 from code.tiles import *
 from code.resources import TILE_FILE
-from code.level import *
 from code.resources import *
 
 
@@ -49,6 +48,13 @@ class Map:
                         rect.top = obstacle.rect.bottom
                     else:
                         rect.bottom = obstacle.rect.top
+
+    def map_highlight(self, scene, coords):
+        for obstacle in self._obstacles:
+            if obstacle.rect.collidepoint(coords):
+                pygame.draw.rect(scene, GREEN, obstacle, 2, 1)
+
+            
 
 
 class Block:
@@ -109,6 +115,11 @@ def load_level(lvl_num, size):
     map[9, 10] = H1_FULL_TILE
     map[10, 9] = H1_FULL_TILE
     map[10, 10] = H1_FULL_TILE
+
+    for _ in range(20):
+        i = np.random.randint(1, 18)
+        j = np.random.randint(1, 18)
+        map[j, i] = np.random.choice(OBSTACLES_TILES)
 
     return map
 
