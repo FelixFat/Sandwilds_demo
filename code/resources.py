@@ -1,6 +1,7 @@
 PLAYER_FILE = "./textures/wizard.png"
 TILE_FILE = "./textures/world_tileset.png"
 
+FONT_SIZE = 16
 
 # HOUSE T1
 H1_FULL_TILE = 9

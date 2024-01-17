@@ -15,6 +15,8 @@ class Map:
 
         self.set_level(-1)
 
+        self._message_font = pygame.font.SysFont("comicsansms", FONT_SIZE)
+
     def draw(self, scene):
         scene.blit(self._tilemap.image, self._tilemap.rect)
 
@@ -49,14 +51,35 @@ class Map:
                     else:
                         rect.bottom = obstacle.rect.top
 
-    def map_highlight(self, scene, coords):
+    def mouse_activities(self, scene, mouse_pos):
+        self._map_highlight(scene, mouse_pos)
+
+    def _map_highlight(self, scene, mouse_pos):
         for obstacle in self._obstacles:
-            if obstacle.rect.collidepoint(coords):
+            if obstacle.rect.collidepoint(mouse_pos):
+
+                text = ""
+                if obstacle.tile in H1_TILES:
+                    text = "Wall"
+                elif obstacle.tile in OBSTACLES_TILES:
+                    text = f"Object {obstacle.tile}"
+                text = f" {text} "
+
+                message = self._message_font.render(text, True, BLACK)
+                message_rect = message.get_rect()
+
+                if mouse_pos[0] - message_rect.width < 0:
+                    message_rect.bottomleft = mouse_pos
+                else:
+                    message_rect.bottomright = mouse_pos
+                
                 pygame.draw.rect(scene, GREEN, obstacle, 2, 1)
 
+                pygame.draw.rect(scene, WHITE, message_rect)
+                pygame.draw.rect(scene, BLACK, message_rect, 1)
+                scene.blit(message, message_rect)
+
             
-
-
 class Block:
 
     def __init__(self, in_type, tile, map_pos, size) -> None:

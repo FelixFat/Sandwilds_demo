@@ -17,7 +17,7 @@ class Game:
         pygame.display.set_caption("Sandwilds")
 
         self.clock = pygame.time.Clock()
-        self.scene = pygame.display.set_mode((WIDTH, HIEGHT))
+        self.screen = pygame.display.set_mode((WIDTH, HIEGHT))
 
         self.map = Map()
 
@@ -52,11 +52,11 @@ class Game:
             self.map.collision(self._player.rect)
     
     def _render(self):
-        self.map.draw(self.scene)
-        self.map.map_highlight(self.scene, self.mouse_pos)
+        self.map.draw(self.screen)
+        self.map.mouse_activities(self.screen, self.mouse_pos)
         
         if self._player is not None:
-            self._player.draw(self.scene)
+            self._player.draw(self.screen)
 
         pygame.display.flip()
 
