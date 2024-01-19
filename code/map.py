@@ -1,8 +1,10 @@
 import numpy as np
 
 from code.tiles import *
-from code.resources import TILE_FILE
+from code.settings import *
 from code.resources import *
+
+from code.text import Text
 
 
 class Map:
@@ -28,10 +30,10 @@ class Map:
     def _set_objects(self):
         self._obstacles.clear()
         self._obstacles = [
-            Wall(self._tilemap.map[w, h], (w, h), TILESIZE)
+            Block(self._tilemap.map[w, h], (w, h), TILESIZE)
             for h in range(self._tilemap.map.shape[1])
             for w in range(self._tilemap.map.shape[0])
-            if self._tilemap.map[w, h] in H1_TILES + OBSTACLES_TILES
+            if self._tilemap.map[w, h] in HOUSE_T1 + OBSTACLES
         ]
 
     def collision(self, rect: pygame.Rect):
@@ -53,96 +55,62 @@ class Map:
 
     def mouse_activities(self, scene, mouse_pos):
         self._map_highlight(scene, mouse_pos)
+        self._map_info(scene, mouse_pos)
 
     def _map_highlight(self, scene, mouse_pos):
         for obstacle in self._obstacles:
             if obstacle.rect.collidepoint(mouse_pos):
+                pygame.draw.rect(scene, Color.GREEN.value, obstacle, 2)
+                break
 
-                text = ""
-                if obstacle.tile in H1_TILES:
-                    text = "Wall"
-                elif obstacle.tile in OBSTACLES_TILES:
-                    text = f"Object {obstacle.tile}"
-                text = f" {text} "
+    def _map_info(self, scene, mouse_pos):
+        for obstacle in self._obstacles:
+            if obstacle.rect.collidepoint(mouse_pos):
+                msg = ""
+                if obstacle.tile in HOUSE_T1:
+                    msg = "Wall"
+                elif obstacle.tile in OBSTACLES:
+                    msg = f"Object {obstacle.tile}"
 
-                message = self._message_font.render(text, True, BLACK)
-                message_rect = message.get_rect()
+                text = Text()
+                text.set_text(text=msg, pos=mouse_pos)
+                text.draw_cloud(scene)
+                break
 
-                if mouse_pos[0] - message_rect.width < 0:
-                    message_rect.bottomleft = mouse_pos
-                else:
-                    message_rect.bottomright = mouse_pos
-                
-                pygame.draw.rect(scene, GREEN, obstacle, 2, 1)
 
-                pygame.draw.rect(scene, WHITE, message_rect)
-                pygame.draw.rect(scene, BLACK, message_rect, 1)
-                scene.blit(message, message_rect)
-
-            
 class Block:
 
-    def __init__(self, in_type, tile, map_pos, size) -> None:
-        self.type = in_type
-        self.tile = tile
-        self.rect = self._set_rect(tile, map_pos, size)
-
-    def _set_rect(self, map_pos, size):
-        rect_pos = [map_pos[0] * size, map_pos[1] * size]
-        rect_size = [size, size]
-        return pygame.Rect(rect_pos, rect_size)
-    
-    def get_info(self):
-        return {'type': self.type, 'pos': (self.rect.x, self.rect.y), 'size': self.rect.size }
-    
-
-class Wall(Block):
-
     def __init__(self, tile, map_pos, size) -> None:
-        super().__init__('wall', tile, map_pos, size)
-
-    def _set_rect(self, tile, map_pos, size):
-        rect_pos = [map_pos[0] * size, map_pos[1] * size]
-        rect_size = [size, size]
-
-        #if tile == DWALL_TILE:
-        #    rect_pos[1] = rect_pos[1] + size // 2
-        #    rect_size[1] = rect_size[1] // 2
-        #elif tile == RWALL_TILE:
-        #    rect_pos[0] = rect_pos[0] + size // 2
-        #    rect_size[0] = rect_size[0] // 2
-        #elif tile == LWALL_TILE:
-        #    rect_size[0] = rect_size[0] // 2
-        #elif tile == UWALL_TILE:
-        #    rect_size[1] = rect_size[1] // 2
-
-        return pygame.Rect(rect_pos, rect_size)
+        self.tile = tile
+        self.size = (size, size)
+        self.pos = (map_pos[0] * size, map_pos[1] * size)
+        self.rect = pygame.Rect(self.pos, self.size)
 
 
 def load_level(lvl_num, size):
     w, h = size
-    map = np.array([[SAND_EMPTY_TILE for _ in range(h)] for _ in range(w)])
+    map = np.array([[Tile.SAND_EMPTY.value for _ in range(h)] for _ in range(w)])
 
     # col, row
-    map[:, 0] = [H1_TOP_TILE for _ in range(w)]
-    map[:, -1] = [H1_BOTTOM_TILE for _ in range(w)]
-    map[0] = [H1_LEFT_TILE for _ in range(h)]
-    map[-1] = [H1_RIGHT_TILE for _ in range(h)]
+    map[2:4, 1] = [Tile.H1_TOP.value for _ in range(2)]
+    map[1, 2:4] = [Tile.H1_LEFT.value for _ in range(2)]
+    map[4, 2:4] = [Tile.H1_RIGHT.value for _ in range(2)]
     
-    map[0, 0] = H1_ITLCORNER_TILE
-    map[0, -1] = H1_IBLCORNER_TILE
-    map[-1, 0] = H1_ITRCORNER_TILE
-    map[-1, -1] = H1_IBRCORNER_TILE
+    map[1, 1] = Tile.H1_ITLCORNER.value
+    map[1, 4] = Tile.H1_IBLCORNER.value
+    map[4, 1] = Tile.H1_ITRCORNER.value
+    map[4, 4] = Tile.H1_IBRCORNER.value
 
-    map[9, 9] = H1_FULL_TILE
-    map[9, 10] = H1_FULL_TILE
-    map[10, 9] = H1_FULL_TILE
-    map[10, 10] = H1_FULL_TILE
+    map[2:4, 2:4] = np.array([Tile.H1_FLOOR.value for _ in range(4)]).reshape((2, 2))
+    map[2, 4] = 22
+    map[3, 4] = 22
 
     for _ in range(20):
         i = np.random.randint(1, 18)
         j = np.random.randint(1, 18)
-        map[j, i] = np.random.choice(OBSTACLES_TILES)
+
+        if map[j, i] not in HOUSE_T1:
+            map[j, i] = np.random.choice(OBSTACLES)
 
     return map
 

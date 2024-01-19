@@ -1,6 +1,7 @@
 import pygame
 import numpy as np
-from code.settings import *
+
+from code.settings import TILESIZE, TILESHAPE
 
 
 class Tileset:
