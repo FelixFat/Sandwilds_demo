@@ -1,4 +1,5 @@
 import numpy as np
+import pickle
 
 from code.tiles import *
 from code.settings import *
@@ -88,29 +89,9 @@ class Block:
 
 
 def load_level(lvl_num, size):
-    w, h = size
-    map = np.array([[Tile.SAND_EMPTY.value for _ in range(h)] for _ in range(w)])
-
-    # col, row
-    map[2:4, 1] = [Tile.H1_TOP.value for _ in range(2)]
-    map[1, 2:4] = [Tile.H1_LEFT.value for _ in range(2)]
-    map[4, 2:4] = [Tile.H1_RIGHT.value for _ in range(2)]
-    
-    map[1, 1] = Tile.H1_ITLCORNER.value
-    map[1, 4] = Tile.H1_IBLCORNER.value
-    map[4, 1] = Tile.H1_ITRCORNER.value
-    map[4, 4] = Tile.H1_IBRCORNER.value
-
-    map[2:4, 2:4] = np.array([Tile.H1_FLOOR.value for _ in range(4)]).reshape((2, 2))
-    map[2, 4] = 22
-    map[3, 4] = 22
-
-    for _ in range(20):
-        i = np.random.randint(1, 18)
-        j = np.random.randint(1, 18)
-
-        if map[j, i] not in HOUSE_T1:
-            map[j, i] = np.random.choice(OBSTACLES)
+    map = np.empty(WINSHAPE)
+    with open("./locations/empty.map", "rb") as file:
+        map = pickle.load(file)
 
     return map
 
